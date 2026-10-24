@@ -203,6 +203,25 @@ bool XfwmTheme::loadPiece(Piece& piece, const std::string& baseName) const
 			cairo_surface_destroy(surface);
 			continue;
 		}
+		// a theme that names no colors (crux): the greys of its borders are scaled to the window color, white becoming that color
+		if (!fReference && darkWindow(fWindow) && strcmp(extension, ".xpm") == 0 &&
+			(baseName.rfind("left-", 0) == 0 || baseName.rfind("right-", 0) == 0 || baseName.rfind("bottom-", 0) == 0)) {
+			cairo_surface_flush(surface);
+			const int stride = cairo_image_surface_get_stride(surface);
+			unsigned char* data = cairo_image_surface_get_data(surface);
+			for (int y = 0; y < cairo_image_surface_get_height(surface); y++) {
+				uint32_t* row = reinterpret_cast<uint32_t*>(data + y * stride);
+				for (int x = 0; x < cairo_image_surface_get_width(surface); x++) {
+					const uint32_t pixel = row[x];	// an XPM pixel is opaque or not there, so premultiplying changes nothing
+					const int r = (pixel >> 16) & 0xff, g = (pixel >> 8) & 0xff, b = pixel & 0xff;
+					const int low = std::min(r, std::min(g, b)), high = std::max(r, std::max(g, b));
+					if ((pixel >> 24) == 0 || high - low > 24) continue;
+					row[x] = (pixel & 0xff000000u) | ((uint32_t)(((fWindow >> 16) & 0xff) * r / 255) << 16) |
+						((uint32_t)(((fWindow >> 8) & 0xff) * g / 255) << 8) | (uint32_t)((fWindow & 0xff) * b / 255);
+				}
+			}
+			cairo_surface_mark_dirty(surface);
+		}
 		piece.surface = own(surface);
 		piece.opaque = opaqueBounds(surface);
 		return true;

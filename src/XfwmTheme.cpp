@@ -102,7 +102,7 @@ uint32_t shadeOf(uint32_t original, uint32_t reference, uint32_t base)
 {
 	auto channel = [](int o, int r, int b) {
 		if (o <= r) return r > 0 ? b * o / r : b;
-		return b + (255 - b) * (o - r) / (255 - r);
+		return b + (255 - b) * (o - r) * 3 / (255 - r) / 10;	// a highlight is a little lighter, not white
 	};
 	uint32_t out = 0xff000000u;
 	for (int shift = 16; shift >= 0; shift -= 8)

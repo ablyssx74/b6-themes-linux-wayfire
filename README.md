@@ -16,6 +16,4 @@ cmake --build build
 change can be looked at without a compositor.
 
 ## Themes
-The theme pictures are **not** in this repository: `themes/` is ignored. Take them from the xfwm4-themes collection (GPL-3; the
-README of `b6` says it was inspired by a leaked build of an OS that is no longer around, so its artwork may not be free to
-redistribute). A theme is a folder with a `themerc`.
+The theme pictures are **not** in this repository: `themes/` is ignored. Take them from the xfwm4-themes collection (GPL-3). A theme is a folder with a `themerc`.

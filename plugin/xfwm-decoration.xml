@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="xfwm-decoration">
+		<_short>xfwm4 decorations</_short>
+		<_long>Window frames drawn from xfwm4 themes (b6, b6+, b6+r, b5+, crux). Use it instead of the decoration plugin.</_long>
+		<category>Effects</category>
+		<option name="theme" type="string">
+			<_short>Theme</_short>
+			<_long>The name of the theme: a folder with a themerc in b6-themes (~/.local/share/b6-themes, /usr/share/b6-themes or the themes path).</_long>
+			<default>b6+r</default>
+		</option>
+		<option name="themes_path" type="string">
+			<_short>Themes path</_short>
+			<_long>Extra folders that hold themes, separated by colons. They are looked in before the data folders.</_long>
+			<default></default>
+		</option>
+		<option name="font" type="string">
+			<_short>Font</_short>
+			<_long>The font of the window titles, as a Pango font description.</_long>
+			<default>Sans 10</default>
+		</option>
+		<option name="double_click" type="string">
+			<_short>Double click on the title bar</_short>
+			<_long>What a double click on the title bar does: minimize, maximize or none.</_long>
+			<default>minimize</default>
+		</option>
+		<option name="ignore_views" type="string">
+			<_short>Decoration disabled for specified window types</_short>
+			<_long>Disables window decoration for windows matching the specified criteria.</_long>
+			<default>none</default>
+		</option>
+		<option name="forced_views" type="string">
+			<_short>Force decorations for specified window types</_short>
+			<_long>Forces window decoration for windows matching the specified criteria, overriding client decoration preference.</_long>
+			<default>none</default>
+		</option>
+	</plugin>
+</wayfire>

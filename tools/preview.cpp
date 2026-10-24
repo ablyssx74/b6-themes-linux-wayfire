@@ -41,6 +41,9 @@ int main(int argc, char** argv)
 		return 2;
 	}
 	XfwmTheme theme;
+	// B6_WINDOW=2a2e32 previews the theme on a dark color scheme
+	if (const char* window = getenv("B6_WINDOW"))
+		theme.setWindowColor((int)strtol(window, nullptr, 16));
 	if (!theme.load(argv[1])) {
 		fprintf(stderr, "cannot load the theme in %s\n", argv[1]);
 		return 1;

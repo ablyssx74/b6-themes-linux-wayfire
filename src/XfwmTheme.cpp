@@ -90,7 +90,42 @@ bool parseColor(const std::string& value, uint32_t& argb)
 	return true;
 }
 
-cairo_surface_t* loadXpm(const std::string& path)
+bool darkWindow(int rgb)
+{
+	if (rgb < 0) return false;
+	const int r = (rgb >> 16) & 0xff, g = (rgb >> 8) & 0xff, b = rgb & 0xff;
+	return (r * 299 + g * 587 + b * 114) / 1000 < 128;
+}
+
+// A color of the window scheme: the shade keeps its distance from the theme's own window color, scaled to the user's.
+uint32_t shadeOf(uint32_t original, uint32_t reference, uint32_t base)
+{
+	auto channel = [](int o, int r, int b) {
+		if (o <= r) return r > 0 ? b * o / r : b;
+		return b + (255 - b) * (o - r) / (255 - r);
+	};
+	uint32_t out = 0xff000000u;
+	for (int shift = 16; shift >= 0; shift -= 8)
+		out |= (uint32_t)channel((original >> shift) & 0xff, (reference >> shift) & 0xff, (base >> shift) & 0xff) << shift;
+	return out;
+}
+
+// the color of the theme's "s active_color_2", or 0
+uint32_t findReference(const std::string& directory)
+{
+	for (const char* name : {"left-active.xpm", "bottom-active.xpm", "right-active.xpm"}) {
+		for (const std::string& line : xpmStrings(directory + "/" + name)) {
+			const size_t at = line.find(" s active_color_2");
+			const size_t hash = line.find("c #");
+			uint32_t argb = 0;
+			if (at != std::string::npos && hash != std::string::npos && parseColor(line.substr(hash + 2, 7), argb))
+				return argb;
+		}
+	}
+	return 0;
+}
+
+cairo_surface_t* loadXpm(const std::string& path, int windowColor = -1, uint32_t reference = 0)
 {
 	const std::vector<std::string> strings = xpmStrings(path);
 	if (strings.empty()) return nullptr;
@@ -106,16 +141,24 @@ cairo_surface_t* loadXpm(const std::string& path)
 		const std::string key = line.substr(0, cpp);
 		// "key c #RRGGBB s symbolic_name": the colour is the word after the 'c' key (the symbolic names are for the toolkit's colours)
 		std::istringstream words(line.substr(cpp));
-		std::string word, color;
+		std::string word, color, symbol;
 		while (words >> word) {
 			if (word == "c") {
 				words >> color;
-				break;
+				continue;
 			}
-			if (word == "s" || word == "m" || word == "g" || word == "g4") words >> word;
+			if (word == "s") {
+				words >> symbol;
+				continue;
+			}
+			if (word == "m" || word == "g" || word == "g4") words >> word;
 		}
 		uint32_t argb = 0;
 		if (!parseColor(color, argb)) argb = 0;
+		if (argb && darkWindow(windowColor) && reference &&
+			(symbol.find("_color_") != std::string::npos || symbol.find("_hilight_") != std::string::npos ||
+				symbol.find("_mid_") != std::string::npos || symbol.find("_shadow_") != std::string::npos))
+			argb = shadeOf(argb, reference, 0xff000000u | (uint32_t)windowColor);
 		palette[key] = argb;
 	}
 
@@ -153,7 +196,7 @@ bool XfwmTheme::loadPiece(Piece& piece, const std::string& baseName) const
 		const std::string path = fDirectory + "/" + baseName + extension;
 		if (!fileExists(path))
 			continue;
-		cairo_surface_t* surface = strcmp(extension, ".png") == 0 ? cairo_image_surface_create_from_png(path.c_str()) : loadXpm(path);
+		cairo_surface_t* surface = strcmp(extension, ".png") == 0 ? cairo_image_surface_create_from_png(path.c_str()) : loadXpm(path, fWindow, fReference);
 		if (!surface)
 			continue;
 		if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS || cairo_image_surface_get_format(surface) != CAIRO_FORMAT_ARGB32) {
@@ -176,6 +219,7 @@ bool XfwmTheme::load(const std::string& directory)
 	if (!fileExists(directory + "/themerc"))
 		return false;
 	readThemerc(directory + "/themerc");
+	fReference = darkWindow(fWindow) ? findReference(directory) : 0;
 
 	static const char* const states[2] = {"active", "inactive"};
 	for (int s = 0; s < 2; s++) {

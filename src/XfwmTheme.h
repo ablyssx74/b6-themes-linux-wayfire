@@ -10,6 +10,7 @@
 #include <cairo.h>
 
 #include <memory>
+#include <cstdint>
 #include <string>
 
 namespace B6 {
@@ -46,6 +47,9 @@ struct Piece {
 
 class XfwmTheme {
 public:
+	// The window color of the user's color scheme as 0xRRGGBB, or -1 for the theme as drawn. When it is dark, the colors the pictures
+	// name (xfwm4's active_color_2, active_hilight_2 and so on) take their shade from it.
+	void setWindowColor(int rgb) { fWindow = rgb; }
 	bool load(const std::string& directory);
 	bool isValid() const { return fValid; }
 	const std::string& name() const { return fName; }
@@ -86,6 +90,8 @@ private:
 	bool loadPiece(Piece& piece, const std::string& baseName) const;
 	void readThemerc(const std::string& path);
 
+	int fWindow = -1;
+	uint32_t fReference = 0;	// the theme's own color_2, what the window color stands for
 	bool fValid = false;
 	std::string fDirectory, fName;
 	Piece fTopLeft[2], fTopRight[2], fTitle[5][2], fLeft[2], fRight[2], fBottom[2], fBottomLeft[2], fBottomRight[2];

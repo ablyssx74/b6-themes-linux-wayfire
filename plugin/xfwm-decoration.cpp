@@ -49,6 +49,7 @@ namespace
 wf::option_wrapper_t<std::string> opt_theme{"xfwm-decoration/theme"};
 wf::option_wrapper_t<std::string> opt_themes_path{"xfwm-decoration/themes_path"};
 wf::option_wrapper_t<std::string> opt_font{"xfwm-decoration/font"};
+wf::option_wrapper_t<std::string> opt_window_color{"xfwm-decoration/window_color"};
 wf::option_wrapper_t<std::string> opt_double_click{"xfwm-decoration/double_click"};
 
 std::vector<std::string> theme_roots()
@@ -79,19 +80,28 @@ std::shared_ptr<B6::XfwmTheme> load_theme()
 {
     static std::map<std::string, std::shared_ptr<B6::XfwmTheme>> cache;
     const std::string name = opt_theme;
+    const std::string color = opt_window_color;
+    int window = -1;
+    if ((color.size() == 7) && (color[0] == '#'))
+    {
+        window = (int)strtol(color.c_str() + 1, nullptr, 16);
+    }
+
     for (const auto& root : theme_roots())
     {
         const std::string directory = root + "/" + name;
-        auto found = cache.find(directory);
+        const std::string key = directory + color;
+        auto found = cache.find(key);
         if (found != cache.end())
         {
             return found->second;
         }
 
         auto theme = std::make_shared<B6::XfwmTheme>();
+        theme->setWindowColor(window);
         if (theme->load(directory))
         {
-            cache[directory] = theme;
+            cache[key] = theme;
             return theme;
         }
     }
@@ -765,6 +775,7 @@ class wayfire_xfwm_decoration : public wf::plugin_interface_t
         wf::get_core().connect(&on_view_tiled);
         opt_theme.set_callback(on_theme_changed);
         opt_font.set_callback(on_theme_changed);
+        opt_window_color.set_callback(on_theme_changed);
 
         for (auto& view : wf::get_core().get_all_views())
         {

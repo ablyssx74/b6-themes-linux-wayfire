@@ -14,6 +14,11 @@
 			<_long>Extra folders that hold themes, separated by colons. They are looked in before the data folders.</_long>
 			<default></default>
 		</option>
+		<option name="window_color" type="string">
+			<_short>Window color</_short>
+			<_long>The window color of your color scheme as #RRGGBB, e.g. #2a2e32. A dark one gives the frames dark borders; empty keeps the theme as drawn.</_long>
+			<default></default>
+		</option>
 		<option name="font" type="string">
 			<_short>Font</_short>
 			<_long>The font of the window titles, as a Pango font description.</_long>

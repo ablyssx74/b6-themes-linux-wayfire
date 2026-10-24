@@ -193,6 +193,10 @@ FrameLayout computeLayout(const XfwmTheme& theme, const FrameParams& params)
 	layout.originY = visible.y;
 	layout.size = {visible.w, visible.h};
 	const Rect client = layout.toDecoration(layout.client);
+	// (a maximized window's pictures are only the bar: the client area below it is part of the window all the same, and the
+	// borders at the sides and the bottom are none)
+	if (params.maximized)
+		layout.size.h = std::max(layout.size.h, client.bottom() + 1);
 	layout.borders = {client.x, client.y, layout.size.w - client.right() - 1, layout.size.h - client.bottom() - 1};
 	layout.titleBar = {0, 0, layout.size.w, client.y};
 	return layout;

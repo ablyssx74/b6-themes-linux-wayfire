@@ -1,0 +1,4 @@
+build/
+*.png
+# the theme pictures are not published from here until their license is settled (see README); themes/ is read at run time
+themes/

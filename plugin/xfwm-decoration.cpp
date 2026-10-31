@@ -193,7 +193,8 @@ class xfwm_decoration_node_t : public wf::scene::node_t, public wf::pointer_inte
     {
         B6::FrameParams p;
         p.maximized  = maximized;
-        p.clientSize = {100, 100};
+        // large: the pictures of a theme (b5+) overhang a small client and the borders would grow with them
+        p.clientSize = {1024, 1024};
         return B6::computeLayout(theme, p);
     }
 
